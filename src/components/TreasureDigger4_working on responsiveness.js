@@ -159,9 +159,9 @@ const TreasureDigger = () => {
   const lastTimeRef = useRef(Date.now());
   
   const FRICTION = 0.95;
-  const CUBE_SIZE = 32;
-  const TREASURE_SIZE = CUBE_SIZE * 2;
-  const BOTTOM_CUBE_SIZE = 24; // Smaller size for bottom layer
+  const CUBE_SIZE = 'calc(100% / 12)'; // Dividing container into 20 columns
+  const BOTTOM_CUBE_SIZE = 'calc(100% / 15)'; // More columns for bottom layer
+  const TREASURE_SIZE = 'calc(100% / 6)'; // Treasures are twice the size of cubes
 
   useEffect(() => {
     initializeGame();
@@ -185,16 +185,15 @@ const TreasureDigger = () => {
       { name: 'Friendship Bracelet', year: '2020', description: 'Ancient social bond symbol' }
     ];
 
-    const containerWidth = 800;
-    const containerHeight = 600;
-    const padding = 100;
+    const containerWidth = 100; // Using percentages now
+    const containerHeight = 100;
+    const padding = 10; // 10% padding from edges
 
     treasureItems.forEach((item, index) => {
-      // const gridX = Math.floor(index / 2);
-      // const gridY = index % 2;
-      
-      const x = padding + Math.random() * (containerWidth - 2 * padding - TREASURE_SIZE);
-      const y = padding + Math.random() * (containerHeight - 2 * padding - TREASURE_SIZE);
+      const paddingPercent = 15;
+      const treasureSizePercent = 16;
+      const x = paddingPercent + Math.random() * (100 - 2 * paddingPercent - treasureSizePercent);
+      const y = paddingPercent + Math.random() * (100 - 2 * paddingPercent - treasureSizePercent);
       
       initialTreasures.push({
         ...item,
@@ -207,8 +206,8 @@ const TreasureDigger = () => {
       });
     });
 
-    const ROWS = 15;
-    const COLS = 20;
+    const ROWS = 12;
+    const COLS = 12;
     
     for (let i = 0; i < ROWS * COLS; i++) {
       const row = Math.floor(i / COLS);
@@ -216,8 +215,8 @@ const TreasureDigger = () => {
       
       initialCubes.push({
         id: `cube-${i}`,
-        x: (col * CUBE_SIZE),
-        y: (row * CUBE_SIZE),
+        x: `${(col * 100 / COLS)}%`,
+        y: `${(row * 100 / ROWS)}%`,
         velocityX: 0,
         velocityY: 0,
         rotation: Math.random() * 30 - 15,
@@ -225,8 +224,8 @@ const TreasureDigger = () => {
       });
     }
       // Create bottom layer (smaller blue cubes)
-      const BOTTOM_ROWS = 40; // More cubes since they're smaller
-      const BOTTOM_COLS = 50;
+      const BOTTOM_ROWS = 15; // More cubes since they're smaller
+      const BOTTOM_COLS = 15;
 
       for (let i = 0; i < BOTTOM_ROWS * BOTTOM_COLS; i++) {
         const row = Math.floor(i / BOTTOM_COLS);
@@ -234,8 +233,8 @@ const TreasureDigger = () => {
         
         initialBottomCubes.push({
           id: `bottom-cube-${i}`,
-          x: (col * BOTTOM_CUBE_SIZE),
-          y: (row * BOTTOM_CUBE_SIZE),
+          x: `${(col * 100 / COLS)}%`,
+          y: `${(row * 100 / ROWS)}%`,
           velocityX: 0,
           velocityY: 0,
           rotation: Math.random() * 30 - 15,
@@ -337,8 +336,8 @@ const checkTreasureReveal = () => {
     if (!isDragging) return;
     
     const rect = document.querySelector('.game-container').getBoundingClientRect();
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
+    const x = ((clientX - rect.left) / rect.width) * 100;
+    const y = ((clientY - rect.top) / rect.height) * 100;
     
     const deltaX = x - startPoint.x;
     const deltaY = y - startPoint.y;
@@ -346,17 +345,21 @@ const checkTreasureReveal = () => {
     // Update top layer (cyan cubes)
     setCubes(prevCubes => 
       prevCubes.map(cube => {
+        const cubeX = parseFloat(cube.x);
+        const cubeY = parseFloat(cube.y);
         const distance = Math.sqrt(
           Math.pow(x - cube.x, 2) + 
           Math.pow(y - cube.y, 2)
         );
         
-        if (distance < 100) {
-          const influence = 1 - (distance / 100);
+        if (distance < 20) {
+          const influence = 1 - (distance / 20);
           const moveSpeed = 0.1;
           
           return {
             ...cube,
+            x: `${cubeX + (deltaX * moveSpeed * influence)}%`,
+            y: `${cubeY + (deltaY * moveSpeed * influence)}%`,
             velocityX: deltaX * moveSpeed * influence,
             velocityY: deltaY * moveSpeed * influence,
             revealed: true,
@@ -370,26 +373,38 @@ const checkTreasureReveal = () => {
     // Update bottom layer (blue cubes)
     setBottomCubes(prevBottomCubes => 
       prevBottomCubes.map(cube => {
+        const rect = document.querySelector('.game-container').getBoundingClientRect();
+        const cubeXPercent = (cube.x / rect.width) * 100;
+        const cubeYPercent = (cube.y / rect.height) * 100;
         const distance = Math.sqrt(
-          Math.pow(x - cube.x, 2) + 
-          Math.pow(y - cube.y, 2)
-        );
+          Math.pow(x - cubeXPercent, 2) + 
+          Math.pow(y - cubeYPercent, 2)
+    );
+
+        const influenceRadius = 15;
         
-        if (distance < 80) {
-          const influence = 1 - (distance / 80);
+        if (distance < influenceRadius) {  // Changed from distancePercent to distance
+          const influence = 1 - (distance / influenceRadius);
           const moveSpeed = 0.05;
           
           // Only apply physics if the cubes above are revealed
-          const cubesAbove = cubes.filter(topCube => 
-            Math.abs(topCube.x - cube.x) < CUBE_SIZE &&
-            Math.abs(topCube.y - cube.y) < CUBE_SIZE
-          );
+          const cubesAbove = cubes.filter(topCube => {
+            const topCubeXPercent = (topCube.x / rect.width) * 100;
+            const topCubeYPercent = (topCube.y / rect.height) * 100;
+            const cubeOverlapThreshold = parseFloat(CUBE_SIZE);
+
+            return Math.abs(topCubeXPercent - cubeXPercent) < cubeOverlapThreshold &&
+                  Math.abs(topCubeYPercent - cubeYPercent) < cubeOverlapThreshold;
+      });
           
           const shouldMove = cubesAbove.some(topCube => topCube.revealed);
           
           if (shouldMove) {
             return {
               ...cube,
+              // Store positions as percentages
+              x: `${cubeXPercent + (deltaX * moveSpeed * influence)}%`,
+              y: `${cubeYPercent + (deltaY * moveSpeed * influence)}%`,
               velocityX: deltaX * moveSpeed * influence,
               velocityY: deltaY * moveSpeed * influence,
               revealed: true,
@@ -434,23 +449,27 @@ const checkTreasureReveal = () => {
   // Update the render order in return statement
   return (
     <div className="flex flex-col min-h-screen max-h-screen bg-gradient-to-b from-yellow-50 to-amber-50">
+      {/* Title */}
       <header className="text-center py-2"> {/* Reduced padding */}
         <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-stone-700" dir="rtl">
         חפשו את אוצרות העתיד
         </h1>
       </header>
-     <div className="flex flex-col items-center"> {/* New wrapper div */}
-      <div 
-      className="game-container relative w-[650px] max-w-4xl h-[490px] bg-stone-800 overflow-hidden touch-none cursor-move select-none rounded-xl border-4 border-stone-900 shadow-xl"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
+
+     {/* Main game area */}
+     <main className="flex-1 flex items-center justify-center p-2"> {/* Reduced padding */}
+     <div className="flex flex-col items-center w-full max-w-sm"> 
+        <div 
+        className="game-container relative w-full aspect-square bg-stone-800 overflow-hidden touch-none cursor-move select-none rounded-xl border-4 border-stone-900 shadow-xl"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
     >
-        {/* Render order: treasures first (bottom), then blue squares, then cyan squares (top) */}
+      {/* Render order: treasures first (bottom), then blue squares, then cyan squares (top) */}
       {treasures.map(treasure => (
         <TreasureCard
           key={treasure.id}
@@ -494,15 +513,16 @@ const checkTreasureReveal = () => {
       {/* New Start Over button */}
       <button 
           onClick={initializeGame}
-          className="mt-4 px-6 py-2 bg-stone-500 text-white rounded-lg hover:bg-stone-600 transition-colors"
+          className="mt-4 px-4 md:px-6 py-2 text-sm md:text-base bg-stone-500 text-white rounded-lg hover:bg-stone-600 transition-colors"
         >
           ניסיון נוסף
         </button>
-        {/* Footer */}
+      </div>
+      </main>
+      {/* Footer */}
       <footer className="text-center py-2 text-sm text-stone-600">
         Created by Ofir Gardy © 2025
       </footer>
-      </div>
     </div>
   );
 };
