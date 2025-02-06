@@ -433,7 +433,12 @@ const checkTreasureReveal = () => {
 
   // Update the render order in return statement
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-yellow-50 to-amber-50 p-4">
+    <div className="flex flex-col min-h-screen max-h-screen bg-gradient-to-b from-yellow-50 to-amber-50">
+      <header className="text-center py-2"> {/* Reduced padding */}
+        <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-stone-700" dir="rtl">
+        חפשו את אוצרות העתיד
+        </h1>
+      </header>
      <div className="flex flex-col items-center"> {/* New wrapper div */}
       <div 
       className="game-container relative w-[650px] max-w-4xl h-[490px] bg-stone-800 overflow-hidden touch-none cursor-move select-none rounded-xl border-4 border-stone-900 shadow-xl"
@@ -493,6 +498,10 @@ const checkTreasureReveal = () => {
         >
           ניסיון נוסף
         </button>
+        {/* Footer */}
+      <footer className="text-center py-2 text-sm text-stone-600">
+        Created by Ofir Gardy © 2025
+      </footer>
       </div>
     </div>
   );
