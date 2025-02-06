@@ -434,6 +434,7 @@ const checkTreasureReveal = () => {
   // Update the render order in return statement
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-yellow-50 to-amber-50 p-4">
+     <div className="flex flex-col items-center"> {/* New wrapper div */}
       <div 
       className="game-container relative w-[650px] max-w-4xl h-[490px] bg-stone-800 overflow-hidden touch-none cursor-move select-none rounded-xl border-4 border-stone-900 shadow-xl"
       onTouchStart={handleTouchStart}
@@ -484,6 +485,14 @@ const checkTreasureReveal = () => {
           }}
         />
       ))}
+      </div>
+      {/* New Start Over button */}
+      <button 
+          onClick={initializeGame}
+          className="mt-4 px-6 py-2 bg-stone-500 text-white rounded-lg hover:bg-stone-600 transition-colors"
+        >
+          Start Over
+        </button>
       </div>
     </div>
   );
