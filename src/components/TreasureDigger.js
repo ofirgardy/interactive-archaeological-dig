@@ -1,0 +1,492 @@
+import React, { useState, useEffect, useRef } from 'react';
+import gameboyLarge from '../images/gameboy-large.png';
+import gameboySmall from '../images/gameboy-small.png';
+import cdromLarge from '../images/cdrom-large.png';
+import cdromSmall from '../images/cdrom-small.png';
+import usbLarge from '../images/usb-large.png';
+import usbSmall from '../images/usb-small.png';
+import braceletLarge from '../images/bracelet-large.png';
+import braceletSmall from '../images/bracelet-small.png';
+
+// TreasureCard Component
+const TreasureCard = ({ treasure, isFound }) => {
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+
+  const getTreasureImage = (treasureName, isLarge = false) => {
+    switch(treasureName) {
+      case 'GameBoy':
+        return isLarge ? gameboyLarge : gameboySmall;
+      case 'CD-ROM':
+        return isLarge ? cdromLarge : cdromSmall;
+      case 'USB Drive':
+        return isLarge ? usbLarge : usbSmall;
+      case 'Friendship Bracelet':
+        return isLarge ? braceletLarge : braceletSmall;
+      default:
+        return `/api/placeholder/${isLarge ? '300' : '64'}/64`;
+    }
+  };
+
+  const getArchaeologicalDescription = (treasureName) => {
+    switch(treasureName) {
+      case 'GameBoy':
+        return {
+          period: '1989-2000 לספירה',
+          description: 'מכשיר פנאי נייד מוקדם שנמצא בשכבה טכנולוגית מהתקופה הדיגיטלית המוקדמת. הממצא מעיד על התפתחות הבידור הנייד והמשחקים האלקטרוניים. סימני שימוש מעידים על פופולריות רבה בקרב בני הנוער של התקופה.'
+        };
+      case 'CD-ROM':
+        return {
+          period: '1995-2010 לספירה',
+          description: 'אמצעי אחסון מידע עתיק המשקף את תחילת עידן המידע הדיגיטלי. השתקפויות הקשת בגוון מתכתי מעידות על טכנולוגיית לייזר מתקדמת לתקופתה. נמצא במצב השתמרות מצוין.'
+        };
+      case 'USB Drive':
+        return {
+          period: '2010-2020 לספירה',
+          description: 'התקן אחסון נייד קטן המייצג את המעבר לניידות דיגיטלית מלאה. הצבעים האדום-שחור אופייניים למותג SanDisk מהתקופה. מהווה עדות לצורך הגובר בניוד מידע אישי.'
+        };
+      case 'Friendship Bracelet':
+        return {
+          period: '2020-2023 לספירה',
+          description: 'צמיד ידידות עשוי חרוזים צבעוניים עם הכיתוב 17 וזוג לבבות. משקף מנהגים חברתיים ואופנה של צעירי התקופה. מצב השתמרות: מצוין, צבעים שמורים היטב.'
+        };
+      default:
+        return { period: '', description: '' };
+    }
+  };
+
+  const handleClick = () => {
+    if (isFound) {
+      setIsFocused(true);
+    }
+  };
+
+  const handleClose = () => {
+    setIsFlipped(false);
+    setIsFocused(false);
+  };
+
+  return (
+    <>
+      <div
+        className={`absolute transition-all duration-500 ease-in-out select-none z-(-10)
+          ${isFound ? 'opacity-100 cursor-pointer pointer-events-auto' : 'opacity-0 pointer-events-none'}
+          ${isFocused ? 'opacity-0' : 'opacity-100'}`}
+        style={{
+          left: treasure.x,
+          top: treasure.y,
+          width: treasure.width,
+          height: treasure.height,
+          transform: `perspective(1000px) rotateY(${isFlipped ? '180deg' : '0deg'})`,
+          transformStyle: 'preserve-3d',
+          userSelect: 'none'
+        }}
+        onClick={handleClick}
+      >
+        <div className="absolute w-full h-full bg-transparent rounded-lg border-2 border-transparent overflow-hidden"
+             style={{ backfaceVisibility: 'hidden' }}>
+          <img
+            src={getTreasureImage(treasure.name)}
+            alt={treasure.name}
+            className="w-full h-full object-contain p-2 select-none transition-opacity duration-300"
+            draggable="false"
+          />
+        </div>
+      </div>
+
+      {isFocused && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 select-none" dir="rtl">
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={handleClose}
+          />
+          
+          <div className="relative w-96 h-96 transition-transform duration-1000"
+               style={{
+                 transform: `perspective(2000px) rotateY(${isFlipped ? '180deg' : '0deg'})`,
+                 transformStyle: 'preserve-3d'
+               }}>
+            <div 
+              className="absolute w-full h-full bg-amber-100 rounded-xl shadow-2xl border-4 border-amber-600 p-6 overflow-hidden"
+              style={{ backfaceVisibility: 'hidden' }}
+              onClick={() => setIsFlipped(true)}
+            >
+              <img
+                src={getTreasureImage(treasure.name, true)}
+                alt={treasure.name}
+                className="w-full h-full object-contain select-none"
+                draggable="false"
+              />
+            </div>
+
+            <div 
+              className="absolute w-full h-full bg-amber-100 rounded-xl shadow-2xl border-4 border-amber-600 p-6 text-right"
+              style={{ 
+                backfaceVisibility: 'hidden',
+                transform: 'rotateY(180deg)'
+              }}
+              onClick={() => setIsFlipped(false)}
+            >
+              <div className="h-full flex flex-col justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-amber-900 mb-4">{treasure.name}</h2>
+                  <p className="text-lg text-amber-800 mb-2">תקופה: {getArchaeologicalDescription(treasure.name).period}</p>
+                  <p className="text-amber-700 leading-relaxed">{getArchaeologicalDescription(treasure.name).description}</p>
+                </div>
+                <button 
+                  className="mt-4 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700"
+                  onClick={handleClose}
+                >
+                  חזרה לאתר החפירות
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+// Main TreasureDigger Component
+const TreasureDigger = () => {
+  const [cubes, setCubes] = useState([]);
+  const [bottomCubes, setBottomCubes] = useState([]);
+  const [treasures, setTreasures] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startPoint, setStartPoint] = useState({ x: 0, y: 0 });
+  const animationFrameRef = useRef();
+  const lastTimeRef = useRef(Date.now());
+  
+  const FRICTION = 0.95;
+  const CUBE_SIZE = 32;
+  const TREASURE_SIZE = CUBE_SIZE * 2;
+  const BOTTOM_CUBE_SIZE = 24; // Smaller size for bottom layer
+
+  useEffect(() => {
+    initializeGame();
+    startPhysicsLoop();
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
+
+  const initializeGame = () => {
+    const initialCubes = [];
+    const initialBottomCubes = []; // New array for bottom layer
+    const initialTreasures = [];
+    
+    const treasureItems = [
+      { name: 'GameBoy', year: '1989', description: 'An ancient handheld gaming device' },
+      { name: 'CD-ROM', year: '1995', description: 'A primitive data storage disk' },
+      { name: 'USB Drive', year: '2010', description: 'Early personal data carrier' },
+      { name: 'Friendship Bracelet', year: '2020', description: 'Ancient social bond symbol' }
+    ];
+
+    const containerWidth = 800;
+    const containerHeight = 600;
+    const padding = 100;
+
+    treasureItems.forEach((item, index) => {
+      // const gridX = Math.floor(index / 2);
+      // const gridY = index % 2;
+      
+      const x = padding + Math.random() * (containerWidth - 2 * padding - TREASURE_SIZE);
+      const y = padding + Math.random() * (containerHeight - 2 * padding - TREASURE_SIZE);
+      
+      initialTreasures.push({
+        ...item,
+        id: `treasure-${index}`,
+        x,
+        y,
+        width: TREASURE_SIZE,
+        height: TREASURE_SIZE,
+        found: false
+      });
+    });
+
+    const ROWS = 15;
+    const COLS = 20;
+    
+    for (let i = 0; i < ROWS * COLS; i++) {
+      const row = Math.floor(i / COLS);
+      const col = i % COLS;
+      
+      initialCubes.push({
+        id: `cube-${i}`,
+        x: (col * CUBE_SIZE),
+        y: (row * CUBE_SIZE),
+        velocityX: 0,
+        velocityY: 0,
+        rotation: Math.random() * 30 - 15,
+        revealed: false
+      });
+    }
+      // Create bottom layer (smaller blue cubes)
+      const BOTTOM_ROWS = 40; // More cubes since they're smaller
+      const BOTTOM_COLS = 50;
+
+      for (let i = 0; i < BOTTOM_ROWS * BOTTOM_COLS; i++) {
+        const row = Math.floor(i / BOTTOM_COLS);
+        const col = i % BOTTOM_COLS;
+        
+        initialBottomCubes.push({
+          id: `bottom-cube-${i}`,
+          x: (col * BOTTOM_CUBE_SIZE),
+          y: (row * BOTTOM_CUBE_SIZE),
+          velocityX: 0,
+          velocityY: 0,
+          rotation: Math.random() * 30 - 15,
+          revealed: false
+        });
+      }
+    
+    setCubes(initialCubes);
+    setBottomCubes(initialBottomCubes);
+    setTreasures(initialTreasures);
+  };
+
+  const updatePhysics = () => {
+    const currentTime = Date.now();
+    const deltaTime = (currentTime - lastTimeRef.current) / 1000;
+    lastTimeRef.current = currentTime;
+
+    // Update top layer physics
+  setCubes(prevCubes => 
+    prevCubes.map(cube => {
+      const newX = cube.x + (cube.velocityX * deltaTime * 60);
+      const newY = cube.y + (cube.velocityY * deltaTime * 60);
+      const newVelocityX = cube.velocityX * FRICTION;
+      const newVelocityY = cube.velocityY * FRICTION;
+      const isMoving = Math.abs(newVelocityX) > 0.01 || Math.abs(newVelocityY) > 0.01;
+
+      return {
+        ...cube,
+        x: newX,
+        y: newY,
+        velocityX: isMoving ? newVelocityX : 0,
+        velocityY: isMoving ? newVelocityY : 0
+      };
+    })
+  );
+
+  // Update bottom layer physics
+  setBottomCubes(prevBottomCubes => 
+    prevBottomCubes.map(cube => {
+      const newX = cube.x + (cube.velocityX * deltaTime * 60);
+      const newY = cube.y + (cube.velocityY * deltaTime * 60);
+      const newVelocityX = cube.velocityX * FRICTION;
+      const newVelocityY = cube.velocityY * FRICTION;
+      const isMoving = Math.abs(newVelocityX) > 0.01 || Math.abs(newVelocityY) > 0.01;
+
+      return {
+        ...cube,
+        x: newX,
+        y: newY,
+        velocityX: isMoving ? newVelocityX : 0,
+        velocityY: isMoving ? newVelocityY : 0
+      };
+    })
+  );
+
+    checkTreasureReveal();
+    animationFrameRef.current = requestAnimationFrame(updatePhysics);
+  };
+
+  const startPhysicsLoop = () => {
+    lastTimeRef.current = Date.now();
+    animationFrameRef.current = requestAnimationFrame(updatePhysics);
+  };
+
+// Update checkTreasureReveal to consider both layers
+const checkTreasureReveal = () => {
+  setTreasures(prevTreasures =>
+    prevTreasures.map(treasure => {
+      const overlappingTopCubes = cubes.filter(cube => 
+        cube.revealed && 
+        cube.x >= treasure.x && 
+        cube.x <= treasure.x + treasure.width &&
+        cube.y >= treasure.y && 
+        cube.y <= treasure.y + treasure.height
+      ).length;
+
+      const overlappingBottomCubes = bottomCubes.filter(cube => 
+        cube.revealed && 
+        cube.x >= treasure.x && 
+        cube.x <= treasure.x + treasure.width &&
+        cube.y >= treasure.y && 
+        cube.y <= treasure.y + treasure.height
+      ).length;
+
+      return {
+        ...treasure,
+        found: overlappingTopCubes < 2 && overlappingBottomCubes < 2
+      };
+    })
+  );
+};
+
+  const handleStartDrag = (clientX, clientY) => {
+    setIsDragging(true);
+    setStartPoint({ x: clientX, y: clientY });
+  };
+
+  const handleDrag = (clientX, clientY) => {
+    if (!isDragging) return;
+    
+    const rect = document.querySelector('.game-container').getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+    
+    const deltaX = x - startPoint.x;
+    const deltaY = y - startPoint.y;
+
+    // Update top layer (cyan cubes)
+    setCubes(prevCubes => 
+      prevCubes.map(cube => {
+        const distance = Math.sqrt(
+          Math.pow(x - cube.x, 2) + 
+          Math.pow(y - cube.y, 2)
+        );
+        
+        if (distance < 100) {
+          const influence = 1 - (distance / 100);
+          const moveSpeed = 0.1;
+          
+          return {
+            ...cube,
+            velocityX: deltaX * moveSpeed * influence,
+            velocityY: deltaY * moveSpeed * influence,
+            revealed: true,
+            rotation: cube.rotation + (deltaX * 0.1)
+          };
+        }
+        return cube;
+      })
+    );
+
+    // Update bottom layer (blue cubes)
+    setBottomCubes(prevBottomCubes => 
+      prevBottomCubes.map(cube => {
+        const distance = Math.sqrt(
+          Math.pow(x - cube.x, 2) + 
+          Math.pow(y - cube.y, 2)
+        );
+        
+        if (distance < 80) {
+          const influence = 1 - (distance / 80);
+          const moveSpeed = 0.05;
+          
+          // Only apply physics if the cubes above are revealed
+          const cubesAbove = cubes.filter(topCube => 
+            Math.abs(topCube.x - cube.x) < CUBE_SIZE &&
+            Math.abs(topCube.y - cube.y) < CUBE_SIZE
+          );
+          
+          const shouldMove = cubesAbove.some(topCube => topCube.revealed);
+          
+          if (shouldMove) {
+            return {
+              ...cube,
+              velocityX: deltaX * moveSpeed * influence,
+              velocityY: deltaY * moveSpeed * influence,
+              revealed: true,
+              rotation: cube.rotation + (deltaX * 0.05)
+            };
+          }
+        }
+        return cube;
+      })
+    );
+
+    setStartPoint({ x, y });
+  };
+
+  const handleMouseDown = (e) => {
+    handleStartDrag(e.clientX, e.clientY);
+  };
+
+  const handleMouseMove = (e) => {
+    handleDrag(e.clientX, e.clientY);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleTouchStart = (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    handleStartDrag(touch.clientX, touch.clientY);
+  };
+
+  const handleTouchMove = (e) => {
+    const touch = e.touches[0];
+    handleDrag(touch.clientX, touch.clientY);
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
+  // Update the render order in return statement
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-yellow-50 to-amber-50 p-4">
+      <div 
+      className="game-container relative w-[650px] max-w-4xl h-[490px] bg-stone-800 overflow-hidden touch-none cursor-move select-none rounded-xl border-4 border-stone-900 shadow-xl"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
+        {/* Render order: treasures first (bottom), then blue squares, then cyan squares (top) */}
+      {treasures.map(treasure => (
+        <TreasureCard
+          key={treasure.id}
+          treasure={treasure}
+          isFound={treasure.found}
+        />
+      ))}
+
+      {bottomCubes.map(cube => (
+        <div
+          key={cube.id}
+          className={`absolute transition-transform duration-200 ease-out 
+            ${cube.revealed ? 'bg-stone-500' : 'bg-stone-600'}
+            shadow-lg rounded-md`}
+          style={{
+            width: BOTTOM_CUBE_SIZE,
+            height: BOTTOM_CUBE_SIZE,
+            transform: `translate(${cube.x}px, ${cube.y}px) rotate(${cube.rotation}deg)`,
+            touchAction: 'none',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)'
+          }}
+        />
+      ))}
+
+      {cubes.map(cube => (
+        <div
+          key={cube.id}
+          className={`absolute transition-transform duration-200 ease-out 
+            ${cube.revealed ? 'bg-amber-200' : 'bg-amber-300'}
+            shadow-lg rounded-md`}
+          style={{
+            width: CUBE_SIZE,
+            height: CUBE_SIZE,
+            transform: `translate(${cube.x}px, ${cube.y}px) rotate(${cube.rotation}deg)`,
+            touchAction: 'none',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)'
+          }}
+        />
+      ))}
+      </div>
+    </div>
+  );
+};
+
+export default TreasureDigger;
