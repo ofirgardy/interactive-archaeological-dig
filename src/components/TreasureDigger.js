@@ -433,10 +433,20 @@ const checkTreasureReveal = () => {
 
   // Update the render order in return statement
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-yellow-50 to-amber-50 p-4">
-     <div className="flex flex-col items-center"> {/* New wrapper div */}
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-yellow-50 to-amber-50">
+     {/* Title */}
+      <header className="text-center py-4">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-stone-700" dir="rtl">
+          חפשו את אוצרות העתיד
+        </h1>
+      </header>
+
+     {/* Main game area */}
+     <main className="flex-1 flex items-center justify-center p-4">
+     <div className="flex flex-col items-center"> 
+      {/* Game container with responsive width */}
       <div 
-      className="game-container relative w-[650px] max-w-4xl h-[490px] bg-stone-800 overflow-hidden touch-none cursor-move select-none rounded-xl border-4 border-stone-900 shadow-xl"
+      className="game-container relative w-full md:w-[650px] h-[490px] md:h-[490px] bg-stone-800 overflow-hidden touch-none cursor-move select-none rounded-xl border-4 border-stone-900 shadow-xl"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -445,7 +455,7 @@ const checkTreasureReveal = () => {
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-        {/* Render order: treasures first (bottom), then blue squares, then cyan squares (top) */}
+      {/* Render order: treasures first (bottom), then blue squares, then cyan squares (top) */}
       {treasures.map(treasure => (
         <TreasureCard
           key={treasure.id}
@@ -494,6 +504,11 @@ const checkTreasureReveal = () => {
           ניסיון נוסף
         </button>
       </div>
+      </main>
+      {/* Footer */}
+      <footer className="text-center py-4 text-stone-600">
+        Created by Ofir Gardy © 2025
+      </footer>
     </div>
   );
 };
