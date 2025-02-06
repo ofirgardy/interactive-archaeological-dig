@@ -443,10 +443,10 @@ const checkTreasureReveal = () => {
 
      {/* Main game area */}
      <main className="flex-1 flex items-center justify-center p-4">
-     <div className="flex flex-col items-center"> 
+     <div className="flex flex-col items-center w-full max-w-md"> 
       {/* Game container with responsive width */}
       <div 
-      className="game-container relative w-full md:w-[650px] h-[490px] md:h-[490px] bg-stone-800 overflow-hidden touch-none cursor-move select-none rounded-xl border-4 border-stone-900 shadow-xl"
+      className="game-container relative w-full aspect-[3/4] bg-stone-800 overflow-hidden touch-none cursor-move select-none rounded-xl border-4 border-stone-900 shadow-xl"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
