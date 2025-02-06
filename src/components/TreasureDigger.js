@@ -491,7 +491,7 @@ const checkTreasureReveal = () => {
           onClick={initializeGame}
           className="mt-4 px-6 py-2 bg-stone-500 text-white rounded-lg hover:bg-stone-600 transition-colors"
         >
-          התחל מחדש
+          ניסיון נוסף
         </button>
       </div>
     </div>
